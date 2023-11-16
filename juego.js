@@ -58,13 +58,6 @@ window.onload = function (){
                 this.velocity.y += this.gravity;
             } else {this.velocity.y = 0;}
 
-            if( this.sides.right + this.velocity.x < BORDEDERECHA ){
-                this.velocity.y += 0;
-            } else {this.velocity.x = 0;}
-
-            if( this.sides.left + this.velocity.x > BORDEIZQUIERDA ){
-                this.velocity.x += 0;
-            } else {this.velocity.x = 0;}
 
         }
 
