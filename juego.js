@@ -14,6 +14,27 @@ window.onload = function (){
 	// Generamos el contexto de trabajo
 	ctx = canvas.getContext("2d");	
 
+    //SPRITE
+
+    class Sprite{
+        constructor({position}){
+            this.position = position;
+            this.image = new Image();
+            this.image.src = './assets/Escenario.png';
+        }
+
+        draw(){
+            ctx.drawImage(this.image, this.position.x, this.position.y)
+        }
+
+    }
+
+    const backgroundLevel = new Sprite({
+        position: {
+            x: 0,
+            y: 0
+        }
+    })
 
     //PLAYER
     class Player{
@@ -85,6 +106,7 @@ window.onload = function (){
         window.requestAnimationFrame(animate);
         ctx.clearRect(0,0, BORDEDERECHA, BORDEINFERIOR);
         
+        backgroundLevel.draw();
         player.velocity.x =0;   //Si no se pone a 0, nunca se parará una vez presionada la tecla.
         if (keys.a.pressed) player.velocity.x = -5;
         else if(keys.d.pressed) player.velocity.x = 5;
