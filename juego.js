@@ -105,8 +105,8 @@ window.onload = function (){
     function animate(){
         window.requestAnimationFrame(animate);
         ctx.clearRect(0,0, BORDEDERECHA, BORDEINFERIOR);
-        
-        backgroundLevel.draw();
+
+        backgroundLevel.draw(); //Dibujar fondo
         player.velocity.x =0;   //Si no se pone a 0, nunca se parará una vez presionada la tecla.
         if (keys.a.pressed) player.velocity.x = -5;
         else if(keys.d.pressed) player.velocity.x = 5;
