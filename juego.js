@@ -1,8 +1,48 @@
 window.onload = function () {
 
+    /*
+    let tiempoInicio;
+    let tiempoFin;
+    let tiempoTotal;
+
+    function iniciarJuego() {
+        tiempoInicio = Date.now();
+        // ... (resto del código de inicialización)
+    }
+
+    function finalizarJuego() {
+            tiempoFin = Date.now();
+            tiempoTotal = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+
+        // Obtener el nombre del jugador (puedes obtenerlo de un formulario o cualquier otra fuente)
+        const nombreJugador = prompt('Ingresa tu nombre:');
+
+        // Obtener la lista de puntajes almacenados en localStorage o inicializarla si es la primera vez
+        const puntajes = JSON.parse(localStorage.getItem('puntajes')) || [];
+
+        // Agregar el nuevo puntaje a la lista
+        puntajes.push({ nombre: nombreJugador, tiempo: tiempoTotal });
+
+        // Ordenar la lista por tiempo (menor tiempo primero)
+        puntajes.sort((a, b) => a.tiempo - b.tiempo);
+
+        // Guardar la lista ordenada en localStorage
+        localStorage.setItem('puntajes', JSON.stringify(puntajes));
+
+        // Mostrar la clasificación en la consola (puedes adaptar esto según tus necesidades)
+        console.clear();
+        console.log('----- Marcadores -----');
+        puntajes.forEach((puntaje, index) => {
+            console.log(`${index + 1}. ${puntaje.nombre}: ${puntaje.tiempo.toFixed(2)}s`);
+        });
+        iniciarJuego();
+    }
+
+    */
+
+    
     //VARIABLES
     const BORDEDERECHA = 1200;
-
     const BORDEINFERIOR = 1220;
 
 
@@ -10,6 +50,14 @@ window.onload = function () {
     canvas = document.getElementById("miCanvas");
     // Generamos el contexto de trabajo
     ctx = canvas.getContext("2d");
+
+    function playSound(audioNombre){
+        let audio = new Audio(audioNombre);
+        audio.play();
+    }
+
+
+    //BARRILES
 
     //SPRITE
 
@@ -48,8 +96,8 @@ window.onload = function () {
             }
 
             this.gravity = 1;
-            this.width = 50;
-            this.height = 50;
+            this.width = 37;
+            this.height = 40;
 
             this.sides = {
                 bottom: this.position.y + this.height,
@@ -57,11 +105,28 @@ window.onload = function () {
                 left: this.position.x,
                 right: this.position.x + this.width
             }
+
+            this.isMirandoIzquierda = false;
+            this.animacion = [[4,54],[47,54],[96,55],[134,55],[140,5],[97,5],[48,6],[10,6]];
+            this.frames = 0;
+            
         }
 
         draw() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+            //ctx.fillStyle = 'red';
+            //ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+
+
+            ctx.drawImage(player.imagen, // Imagen completa con todos los comecocos (Sprite)
+					  player.animacion[posicion][0],    // Posicion X del sprite donde se encuentra el comecocos que voy a recortar del sprite para dibujar
+					  player.animacion[posicion][1],	  // Posicion Y del sprite donde se encuentra el comecocos que voy a recortar del sprite para dibujar
+					  player.width, 		  // Tamaño X del comecocos que voy a recortar para dibujar
+					  player.height,	      // Tamaño Y del comecocos que voy a recortar para dibujar
+					  player.position.x,      // Posicion x de pantalla donde voy a dibujar el comecocos recortado
+					  player.position.y,				  // Posicion y de pantalla donde voy a dibujar el comecocos recortado
+					  player.width,		  // Tamaño X del comecocos que voy a dibujar
+					  player.height);       // Tamaño Y del comecocos que voy a dibujar
+
         }
 
         update() {
@@ -69,17 +134,30 @@ window.onload = function () {
             this.sides.left = this.position.x;
             this.sides.right = this.position.x + this.width;
             this.sides.bottom = this.position.y + this.height;
+            
 
             //por encima del borde inferior
-            /* if (this.sides.bottom + this.velocity.y < BORDEINFERIOR) {
-                this.velocity.y += this.gravity;
-            } else { this.velocity.y = 0; } */
+
             this.velocity.y += this.gravity;
             this.position.x += this.velocity.x;
             this.position.y += this.velocity.y;
-
+        
         }
 
+        stand(){
+            if(this.floor===true){
+                if(this.isMirandoIzquierda === false){
+                    posicion = 0;
+                } else {posicion = 4}
+            }
+        }
+
+        resetPosition() {
+            this.position = {
+                x: 150,
+                y: 100
+            }
+        }
     }
 
     // trues y falses para las teclas
@@ -121,6 +199,10 @@ window.onload = function () {
     }
 
     const player = new Player();
+    imagen = new Image();
+	imagen.src="assets/marios.png";
+	Player.prototype.imagen = imagen;
+    let posicion = 0;
 
 
     const platforms = [
@@ -320,6 +402,13 @@ window.onload = function () {
             }
             , 272, 43, -3.1),
 
+        new Platform(
+            position = {
+                x: 150,
+                y: 940
+            }
+            , 70, 43, -3.1),
+
     ]
 
 
@@ -360,12 +449,31 @@ window.onload = function () {
         }
 
 
-
+        if (keys.w.pressed === true){
+            if (player.isMirandoIzquierda === false){
+                posicion = 3;
+            } else { posicion = 7;}
+        } else if (keys.d.pressed === true) {
+            player.isMirandoIzquierda = false;
+            posicion = 2;
+        } else if (keys.a.pressed === true) {
+            player.isMirandoIzquierda = true;
+            posicion = 6;
+        }else{
+            if(player.isMirandoIzquierda === true){
+                posicion = 4;
+            } else {
+                posicion = 0;
+            }
+        }
 
         player.draw(); //Dibujar el rectangulo
         player.update(); //La actualización que este recibe al realizar procesos.
 
-
+        if (player.position.y > 1000) {
+            finalizarJuego();
+            player.resetPosition();
+        }
     }
 
     animate();
@@ -376,9 +484,11 @@ window.onload = function () {
 
             // Salto.
             case 'w':
+                keys.w.pressed=true;
                 if (player.floor) {
-                    player.velocity.y = -14
-                    player.floor = false
+                    player.velocity.y = -14;
+                    player.floor = false;
+                    playSound("assets/retro-game-jump.mp3");
                 };
                 break;
 
@@ -398,17 +508,24 @@ window.onload = function () {
     window.addEventListener('keyup', (event) => {
         switch (event.key) {
 
+            case 'w':
+                keys.w.pressed = false;
+                break;
+
             case 'a':
                 keys.a.pressed = false;
                 break;
 
             case 'd':
                 keys.d.pressed = false;
+                player.stand();
                 break;
 
         }
 
 
     })
+
+    iniciarJuego();
 
 }
