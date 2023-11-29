@@ -1,5 +1,6 @@
 window.onload = function () {
 
+    
     /*
     let tiempoInicio;
     let tiempoFin;
@@ -40,11 +41,11 @@ window.onload = function () {
 
     */
 
-    
+
     //VARIABLES
     const BORDEDERECHA = 1200;
     const BORDEINFERIOR = 1220;
-
+    let frames = 0;
 
     //CANVAS
     canvas = document.getElementById("miCanvas");
@@ -108,7 +109,8 @@ window.onload = function () {
 
             this.isMirandoIzquierda = false;
             this.animacion = [[4,54],[47,54],[96,55],[134,55],[140,5],[97,5],[48,6],[10,6]];
-            this.frames = 0;
+            
+            
             
         }
 
@@ -141,6 +143,8 @@ window.onload = function () {
             this.velocity.y += this.gravity;
             this.position.x += this.velocity.x;
             this.position.y += this.velocity.y;
+
+            
         
         }
 
@@ -190,7 +194,7 @@ window.onload = function () {
 
 
 
-            ctx.fillStyle = 'rgba(200,200,0,3)';
+            ctx.fillStyle = 'rgba(0,0,0,0)';
             ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
 
 
@@ -203,7 +207,6 @@ window.onload = function () {
 	imagen.src="assets/marios.png";
 	Player.prototype.imagen = imagen;
     let posicion = 0;
-
 
     const platforms = [
         new Platform(
@@ -418,6 +421,7 @@ window.onload = function () {
     function animate() {
         window.requestAnimationFrame(animate);
         ctx.clearRect(0, 0, BORDEDERECHA, BORDEINFERIOR);
+        frames++;
 
         player.velocity.x = 0;   //Si no se pone a 0, nunca se parará una vez presionada la tecla.
         if (keys.a.pressed) player.velocity.x = -5;
@@ -449,20 +453,27 @@ window.onload = function () {
         }
 
 
-        if (keys.w.pressed === true){
+        if (keys.w.pressed === true && player.floor === false){
             if (player.isMirandoIzquierda === false){
                 posicion = 3;
             } else { posicion = 7;}
         } else if (keys.d.pressed === true) {
+            player.velocity.x = 5;
             player.isMirandoIzquierda = false;
-            posicion = 2;
+            if (frames % 4 === 0 && player.floor === true){
+                posicion = (posicion === 1) ? 2 : 1;
+            } 
         } else if (keys.a.pressed === true) {
+            player.velocity.x = -5;
             player.isMirandoIzquierda = true;
-            posicion = 6;
+            if (frames % 4 === 0 && player.floor === true){
+                posicion = (posicion === 5) ? 6 : 5;
+            } 
         }else{
-            if(player.isMirandoIzquierda === true){
+
+            if(player.isMirandoIzquierda === true && player.floor === true ){
                 posicion = 4;
-            } else {
+            } else if (player.isMirandoIzquierda === false && player.floor === true ){
                 posicion = 0;
             }
         }
@@ -474,6 +485,7 @@ window.onload = function () {
             finalizarJuego();
             player.resetPosition();
         }
+
     }
 
     animate();
@@ -486,7 +498,7 @@ window.onload = function () {
             case 'w':
                 keys.w.pressed=true;
                 if (player.floor) {
-                    player.velocity.y = -14;
+                    player.velocity.y = -15;
                     player.floor = false;
                     playSound("assets/retro-game-jump.mp3");
                 };
@@ -518,7 +530,6 @@ window.onload = function () {
 
             case 'd':
                 keys.d.pressed = false;
-                player.stand();
                 break;
 
         }
@@ -526,6 +537,6 @@ window.onload = function () {
 
     })
 
-    iniciarJuego();
+    
 
 }
