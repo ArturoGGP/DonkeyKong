@@ -1,45 +1,10 @@
 window.onload = function () {
 
     
-    /*
+    let nombreJugador;
     let tiempoInicio;
     let tiempoFin;
     let tiempoTotal;
-
-    function iniciarJuego() {
-        tiempoInicio = Date.now();
-        // ... (resto del código de inicialización)
-    }
-
-    function finalizarJuego() {
-            tiempoFin = Date.now();
-            tiempoTotal = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
-
-        // Obtener el nombre del jugador (puedes obtenerlo de un formulario o cualquier otra fuente)
-        const nombreJugador = prompt('Ingresa tu nombre:');
-
-        // Obtener la lista de puntajes almacenados en localStorage o inicializarla si es la primera vez
-        const puntajes = JSON.parse(localStorage.getItem('puntajes')) || [];
-
-        // Agregar el nuevo puntaje a la lista
-        puntajes.push({ nombre: nombreJugador, tiempo: tiempoTotal });
-
-        // Ordenar la lista por tiempo (menor tiempo primero)
-        puntajes.sort((a, b) => a.tiempo - b.tiempo);
-
-        // Guardar la lista ordenada en localStorage
-        localStorage.setItem('puntajes', JSON.stringify(puntajes));
-
-        // Mostrar la clasificación en la consola (puedes adaptar esto según tus necesidades)
-        console.clear();
-        console.log('----- Marcadores -----');
-        puntajes.forEach((puntaje, index) => {
-            console.log(`${index + 1}. ${puntaje.nombre}: ${puntaje.tiempo.toFixed(2)}s`);
-        });
-        iniciarJuego();
-    }
-
-    */
 
 
     //VARIABLES
@@ -57,7 +22,6 @@ window.onload = function () {
         audio.play();
     }
 
-
     //BARRILES
 
     //SPRITE
@@ -74,13 +38,6 @@ window.onload = function () {
         }
 
     }
-
-    const backgroundLevel = new Sprite({
-        position: {
-            x: 0,
-            y: 0
-        }
-    })
 
     //PLAYER
     class Player {
@@ -115,9 +72,6 @@ window.onload = function () {
         }
 
         draw() {
-            //ctx.fillStyle = 'red';
-            //ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-
 
             ctx.drawImage(player.imagen, // Imagen completa con todos los comecocos (Sprite)
 					  player.animacion[posicion][0],    // Posicion X del sprite donde se encuentra el comecocos que voy a recortar del sprite para dibujar
@@ -192,22 +146,46 @@ window.onload = function () {
 
         draw() {
 
-
-
             ctx.fillStyle = 'rgba(0,0,0,0)';
             ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-
-
+        
         }
 
     }
 
+    class Objetivo {
+        constructor(){
+            
+            this.position = {
+                x: 400,
+                y: 40
+            }
+
+            this.width = 200;
+            this.height = 150;
+        }
+        
+        draw(){
+
+            ctx.fillStyle = 'rgba(2,2,222,2)';
+            ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
+        }
+
+        
+    }
+
     const player = new Player();
+    const backgroundLevel = new Sprite({
+        position: {
+            x: 0,
+            y: 0
+        }
+    })
+    const objetivo1 = new Objetivo();
     imagen = new Image();
 	imagen.src="assets/marios.png";
 	Player.prototype.imagen = imagen;
     let posicion = 0;
-
     const platforms = [
         new Platform(
             position = {
@@ -414,19 +392,15 @@ window.onload = function () {
 
     ]
 
-
-
-
     //LOOP - Animacion
     function animate() {
         window.requestAnimationFrame(animate);
         ctx.clearRect(0, 0, BORDEDERECHA, BORDEINFERIOR);
         frames++;
-
+        
         player.velocity.x = 0;   //Si no se pone a 0, nunca se parará una vez presionada la tecla.
         if (keys.a.pressed) player.velocity.x = -5;
         else if (keys.d.pressed) player.velocity.x = 5;
-
         backgroundLevel.draw(); //Dibujar fondo
 
         for (platform of platforms) {
@@ -458,13 +432,13 @@ window.onload = function () {
                 posicion = 3;
             } else { posicion = 7;}
         } else if (keys.d.pressed === true) {
-            player.velocity.x = 5;
+           
             player.isMirandoIzquierda = false;
             if (frames % 4 === 0 && player.floor === true){
                 posicion = (posicion === 1) ? 2 : 1;
             } 
         } else if (keys.a.pressed === true) {
-            player.velocity.x = -5;
+            
             player.isMirandoIzquierda = true;
             if (frames % 4 === 0 && player.floor === true){
                 posicion = (posicion === 5) ? 6 : 5;
@@ -480,15 +454,77 @@ window.onload = function () {
 
         player.draw(); //Dibujar el rectangulo
         player.update(); //La actualización que este recibe al realizar procesos.
+        objetivo1.draw();
 
         if (player.position.y > 1000) {
             finalizarJuego();
-            player.resetPosition();
         }
 
     }
 
-    animate();
+    function iniciarJuego() {
+        player.resetPosition();
+        nombreJugador = prompt('Ingresa tu nombre:');
+        tiempoInicio = Date.now();
+        animate();
+    }
+
+
+    miStorage = window.localStorage;
+
+    function finalizarJuego() {
+        tiempoFin = Date.now();
+        player.resetPosition();
+        tiempoTotal = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+
+        miStorage.setItem(miStorage.length, nombreJugador + "," + tiempoTotal);
+
+        sacarDeStorage();
+
+        arrayDatos.sort(dividirYOrdenar);
+
+        mostrarLista();
+    }
+
+    let arrayDatos = [];
+
+    function sacarDeStorage(){
+
+        for (let i = 0; i < miStorage.length; i++) {
+            arrayDatos[i] = miStorage.getItem(miStorage.key(i));
+        }
+    }
+
+    function dividirYOrdenar(t1, t2){
+
+        let c1 = parseFloat(t1.split(",")[1]);
+        let c2 = parseFloat(t2.split(",")[1]);
+
+        if (c1 < c2) {
+            return -1;
+        } else if (c1 > c2){
+            return 1;
+        } else {
+            return 0;
+        }
+
+    }
+
+    function mostrarLista(){
+        let tiempos = document.getElementById("lista");
+        tiempos.innerHTML = "";
+        for (i = 0; i < 10; i++){
+
+            if (miStorage[i]){
+                let liItem = document.createElement("li");
+                let texto = document.createTextNode(arrayDatos[i]);
+                tiempos.appendChild(liItem).appendChild(texto);
+            }
+        }
+
+
+    }
+
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {
@@ -537,6 +573,7 @@ window.onload = function () {
 
     })
 
-    
+    let boton=document.getElementById("nuevo");					  
+	boton.onclick=iniciarJuego;
 
 }
